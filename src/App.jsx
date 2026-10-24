@@ -5,7 +5,7 @@ import AboutPage from "./pages/About";
 import NotFoundPage from "./pages/Not-Found";
 import CoinDetailsPage from "./pages/coin-Details";
 import { Routes, Route } from "react-router";
-import SortSelector from "./components/SortSelector"; 
+// import SortSelector from "./components/SortSelector"; 
 const API_URL = import.meta.env.VITE_COINS_API_URL;
 
 const App = () => {

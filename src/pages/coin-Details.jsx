@@ -31,7 +31,7 @@ const CoinDetailsPage = () => {
     return (
         <div className='coin-details-container'>
             <Link to="/">Back to Coins List</Link>
-            <h1 className='coin-details-container'>
+            <h1 className='coin-details-title'>
                 {coin? `${coin.name} (${coin.symbol.toUpperCase()})` : `coin details`}
             </h1>
             {loading && <Spinner />}
@@ -55,7 +55,7 @@ const CoinDetailsPage = () => {
                         ${coin.market_data.low_24h.usd.toLocaleString()}
                         </h4>
                         <h5>24h Price Change: 
-                        ${coin.market_data.price_change_24h.toFixed(2)} (${coin.market_data.price_change_percentage_24h.toFixed(2)}%)
+                        {coin.market_data.price_change_24h.toFixed(2)} (${coin.market_data.price_change_percentage_24h.toFixed(2)}%)
                         </h5>
                         <h4>Total Supply: 
                         ${coin.market_data.total_supply.toLocaleString() || 'N/A'}
