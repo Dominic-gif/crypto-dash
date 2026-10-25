@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import Spinner from '../components/Spinner';
 import CoinChart from '../components/CoinChart';
+import { fetchJSON } from '../api';
 const COIN_DETAILS_URL = import.meta.env.VITE_COIN_API_URL;
 
 const CoinDetailsPage = () => {
@@ -11,22 +12,21 @@ const CoinDetailsPage = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        const controller = new AbortController();
         const fetchCoin = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const res = await fetch(`${COIN_DETAILS_URL}${id}`)
-                if (!res.ok) throw new Error('Failed to fetch coin data');
-                const data = await res.json();
-                
+                const data = await fetchJSON(`${COIN_DETAILS_URL}${id}`, controller.signal);
                 setCoin(data);
-                setLoading(false);
-            } catch (err) {  
-                console.log(err);
-                setError(err.message);
+            } catch (err) {
+                if (err.name !== 'AbortError') setError(err.message);
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) setLoading(false);
             }
         }
         fetchCoin();
+        return () => controller.abort();
     }, [id]);
     return (
         <div className='coin-details-container'>

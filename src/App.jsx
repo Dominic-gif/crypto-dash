@@ -5,6 +5,7 @@ import AboutPage from "./pages/About";
 import NotFoundPage from "./pages/Not-Found";
 import CoinDetailsPage from "./pages/coin-Details";
 import { Routes, Route } from "react-router";
+import { fetchJSON } from "./api";
 // import SortSelector from "./components/SortSelector"; 
 const API_URL = import.meta.env.VITE_COINS_API_URL;
 
@@ -16,20 +17,24 @@ const App = () => {
   const [filter, setFilter] = useState("");
   const [sortBy,  setSortBy] = useState("market_cap_desc");
   useEffect(() => {
+    const controller = new AbortController();
     const fetchCoins = async () => {
+      setLoading(true);
+      setError(null);
       try{
-        const res = await fetch(`${API_URL}&order=${sortBy}&per_page=${limit}&page=1&sparkline=false`);
-        if (!res.ok) throw new Error('Failed to fetch data');
-        const data = await res.json();
-        
+        const data = await fetchJSON(
+          `${API_URL}&order=${sortBy}&per_page=${limit}&page=1&sparkline=false`,
+          controller.signal
+        );
         setCoins(data);
-        setLoading(false);
       } catch (error) {
-        setError(error.message);
-        setLoading(false);
+        if (error.name !== 'AbortError') setError(error.message);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
     fetchCoins();
+    return () => controller.abort();
   }, [limit, sortBy]);
 
  

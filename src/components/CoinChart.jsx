@@ -13,6 +13,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
+import { fetchJSON } from '../api';
 
 ChartJS.register(
   CategoryScale, LinearScale, TimeScale,
@@ -24,27 +25,23 @@ const API_URL = import.meta.env.VITE_COIN_API_URL;
  const CoinChart = ({coinId}) => {
     const [chartData, setChartData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
   useEffect(() => {
+  const controller = new AbortController();
   const fetchPrices = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const url = `${API_URL}${coinId}/market_chart?vs_currency=usd&days=7`;
-      console.log('URL:', url);
-
-      const res = await fetch(url);
-      console.log('Status:', res.status);
-
-      const text = await res.text();
-      console.log('Body start:', text.slice(0, 200));
-
-      const data = JSON.parse(text);
+      const data = await fetchJSON(
+        `${API_URL}${coinId}/market_chart?vs_currency=usd&days=7`,
+        controller.signal
+      );
 
       const prices = data.prices.map((price) => ({
         x: price[0],
         y: price[1],
       }));
-      console.log(prices);
-      
 
       setChartData({
         datasets: [
@@ -60,14 +57,19 @@ const API_URL = import.meta.env.VITE_COIN_API_URL;
         ],
       });
     } catch (err) {
-      console.error(err);
+      if (err.name !== 'AbortError') setError(err.message);
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   };
 
   fetchPrices();
+  return () => controller.abort();
 }, [coinId]);
+
+if (error) {
+  return <p className='error'>Chart unavailable: {error}</p>;
+}
 
 if (loading || !chartData) {
   return <p>Loading chart...</p>;
